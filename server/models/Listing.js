@@ -1,0 +1,28 @@
+const mongoose = require('mongoose');
+
+const listingSchema = new mongoose.Schema({
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  photoUrl: { type: String },
+  fullName: { type: String, required: true },
+  email: { type: String, required: true },
+  mobileNumber: { type: String, required: true },
+  address: { type: String, required: true },
+  age: { type: Number, required: true },
+  aboutYourself: { type: String },
+  vacancyCount: { type: Number, enum: [1, 2, 3], required: true },
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number],
+      required: true
+    }
+  }
+}, { timestamps: true });
+
+listingSchema.index({ location: '2dsphere' });
+
+module.exports = mongoose.model('Listing', listingSchema);
