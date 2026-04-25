@@ -9,6 +9,7 @@ import Onboarding from './pages/Onboarding';
 import FindFlat from './pages/FindFlat';
 import ListFlat from './pages/ListFlat';
 import Profile from './pages/Profile';
+import Chats from './pages/Chats';
 import { useState } from 'react';
 import AuthModals from './components/AuthModals';
 
@@ -35,6 +36,7 @@ function App() {
                   <Route path="/find-flat" element={<FindFlat />} />
                   <Route path="/list-flat" element={<ListFlat />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/chats" element={<Chats />} />
                 </Route>
               </Routes>
             </main>

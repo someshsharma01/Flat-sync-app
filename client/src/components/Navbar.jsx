@@ -83,13 +83,19 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
           Contact
           <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all group-hover:w-full"></span>
         </a>
-        {isAuthenticated && user?.onboardingComplete && (
+        {isAuthenticated && (
           <>
             <Link to="/find-flat" className="nav-item text-gray-600 hover:text-primary-600 transition-colors font-medium relative group">
-              Find Flat
+              Find Flatmate
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all group-hover:w-full"></span>
             </Link>
-            <Link to="/list-flat" className="nav-item text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 hover:scale-105 transition-transform"><PlusCircle className="w-4 h-4"/> List a Flat Vacancy</Link>
+            <Link to="/chats" className="nav-item text-gray-600 hover:text-primary-600 transition-colors font-medium relative group">
+              Chats
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all group-hover:w-full"></span>
+            </Link>
+            {user?.onboardingComplete && (
+              <Link to="/list-flat" className="nav-item text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 hover:scale-105 transition-transform"><PlusCircle className="w-4 h-4"/> List a Flat Vacancy</Link>
+            )}
           </>
         )}
       </div>
@@ -97,7 +103,18 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
       <div className="flex items-center gap-4 relative nav-item">
         {isAuthenticated ? (
           <>
-            <div className="relative cursor-pointer hover:scale-110 transition-transform" onClick={() => setShowDropdown(!showDropdown)}>
+            <Link to="/profile" className="flex items-center gap-2 hover:bg-gray-100 py-1.5 px-2.5 rounded-full transition-all group">
+              {user.photoUrl ? (
+                <img src={user.photoUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm bg-gray-100 group-hover:scale-105 transition-transform" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold group-hover:scale-105 transition-transform">
+                  {user?.name?.[0]?.toUpperCase()}
+                </div>
+              )}
+              <span className="font-semibold text-sm text-gray-700 hidden sm:block">Hi, {user?.name?.split(' ')[0]}</span>
+            </Link>
+
+            <div className="relative cursor-pointer hover:scale-110 transition-transform ml-2" onClick={() => setShowDropdown(!showDropdown)}>
               <Bell className="w-6 h-6 text-gray-600 hover:text-primary-600 transition" />
               {notifications > 0 && (
                 <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold shadow-sm shadow-rose-500/50">
@@ -127,17 +144,7 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
               </div>
             )}
 
-            <Link to="/profile" className="flex items-center gap-2 hover:bg-gray-100 py-1.5 px-2.5 rounded-full transition-all group">
-              {user.photoUrl ? (
-                <img src={user.photoUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover shadow-sm bg-gray-100 group-hover:scale-105 transition-transform" />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold group-hover:scale-105 transition-transform">
-                  {user?.name?.[0]?.toUpperCase()}
-                </div>
-              )}
-              <span className="font-semibold text-sm text-gray-700 hidden sm:block">{user.name}</span>
-            </Link>
-            <button onClick={() => { logout(); navigate('/'); }} className="p-2 text-gray-500 hover:bg-rose-50 hover:text-rose-600 rounded-full transition-colors">
+            <button onClick={() => { logout(); navigate('/'); }} className="p-2 text-gray-500 hover:bg-rose-50 hover:text-rose-600 rounded-full transition-colors ml-2">
               <LogOut className="w-5 h-5" />
             </button>
           </>

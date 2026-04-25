@@ -66,4 +66,23 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-module.exports = { getUserProfile, updateUserProfile };
+const saveListing = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    const listingId = req.params.id;
+    if (user.savedListings.includes(listingId)) {
+      user.savedListings = user.savedListings.filter(id => id.toString() !== listingId);
+    } else {
+      user.savedListings.push(listingId);
+    }
+    
+    await user.save();
+    res.json(user.savedListings);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { getUserProfile, updateUserProfile, saveListing };

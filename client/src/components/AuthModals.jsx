@@ -44,7 +44,16 @@ const AuthModals = ({ type, onClose }) => {
         navigate('/find-flat');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      const msg = error.response?.data?.message || 'Something went wrong';
+      if (msg === 'Email not registered') {
+        toast.error('Email not registered. Please sign up first.');
+        setIsLogin(false);
+      } else if (msg === 'User already exists') {
+        toast.error('Email already registered. Please login.');
+        setIsLogin(true);
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }

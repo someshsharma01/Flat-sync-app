@@ -11,14 +11,19 @@ const userSchema = new mongoose.Schema({
   address: { type: String },
   aboutMe: { type: String },
   preferences: {
-    gender: { type: String, enum: ['Male', 'Female'] },
-    organizedRoom: { type: String, enum: ['Yes', 'No'] },
-    smokeOrDrink: { type: String, enum: ['Yes', 'No', 'Occasionally'] },
-    foodPreference: { type: String, enum: ['Veg', 'Non-Veg'] },
-    profession: { type: String, enum: ['Student', 'Working'] },
-    sleepSchedule: { type: String, enum: ['Late Night', 'Early Night', 'Early in the Night'] }
+    foodPreference: { type: String, enum: ['Vegetarian', 'Non-Vegetarian', 'Eggetarian', 'No Preference'] },
+    smokingHabit: { type: String, enum: ['Regularly', 'Occasionally', 'No', 'Comfortable with smokers'] },
+    alcoholConsumption: { type: String, enum: ['Regularly', 'Occasionally', 'No', 'Okay with others drinking'] },
+    cleanlinessLevel: { type: String, enum: ['Very Clean', 'Moderately Clean', 'Okay with some mess', 'Messy'] },
+    sleepSchedule: { type: String, enum: ['Early sleeper (before 11 PM)', 'Moderate (11 PM – 1 AM)', 'Night owl (after 1 AM)'] },
+    workStudyRoutine: { type: String, enum: ['Work from home', 'Office/College (daytime)', 'Hybrid', 'Night shifts'] },
+    guestFrequency: { type: String, enum: ['Frequently', 'Occasionally', 'Rarely', 'Never'] },
+    noiseTolerance: { type: String, enum: ['Prefer quiet environment', 'Moderate noise is fine', 'Comfortable with loud environment'] },
+    sharingExpenses: { type: String, enum: ['Strictly divided', 'Flexible sharing', 'I prefer someone else to manage', 'Discuss and decide'] },
+    lifestylePersonality: { type: String, enum: ['Social & outgoing', 'Balanced', 'Private & reserved'] }
   },
-  onboardingComplete: { type: Boolean, default: false }
+  onboardingComplete: { type: Boolean, default: false },
+  savedListings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }]
 }, { timestamps: true });
 
 userSchema.pre('save', async function() {

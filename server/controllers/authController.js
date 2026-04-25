@@ -29,7 +29,11 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     
-    if (user && (await user.matchPassword(password))) {
+    if (!user) {
+      return res.status(404).json({ message: 'Email not registered' });
+    }
+    
+    if (await user.matchPassword(password)) {
       res.json({
         _id: user._id,
         name: user.name,
@@ -38,7 +42,7 @@ const loginUser = async (req, res) => {
         token: generateToken(user._id)
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      res.status(401).json({ message: 'Invalid password' });
     }
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -47,17 +51,33 @@ const loginUser = async (req, res) => {
 
 const submitOnboarding = async (req, res) => {
   try {
-    const { gender, organizedRoom, smokeOrDrink, foodPreference, profession, sleepSchedule } = req.body;
+    const { 
+      foodPreference, 
+      smokingHabit, 
+      alcoholConsumption, 
+      cleanlinessLevel, 
+      sleepSchedule, 
+      workStudyRoutine, 
+      guestFrequency, 
+      noiseTolerance, 
+      sharingExpenses, 
+      lifestylePersonality 
+    } = req.body;
+    
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     
     user.preferences = {
-      gender,
-      organizedRoom,
-      smokeOrDrink,
       foodPreference,
-      profession,
-      sleepSchedule
+      smokingHabit,
+      alcoholConsumption,
+      cleanlinessLevel,
+      sleepSchedule,
+      workStudyRoutine,
+      guestFrequency,
+      noiseTolerance,
+      sharingExpenses,
+      lifestylePersonality
     };
     user.onboardingComplete = true;
     const updatedUser = await user.save();

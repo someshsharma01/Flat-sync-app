@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 import api from '../utils/axiosInstance';
 import toast from 'react-hot-toast';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
+
+const libraries = ['places'];
 
 const mapContainerStyle = { width: '100%', height: '100%' };
 const center = { lat: 28.6139, lng: 77.2090 };
@@ -14,9 +16,12 @@ const FindFlat = () => {
   const [selectedListing, setSelectedListing] = useState(null);
   const [reqStatus, setReqStatus] = useState({});
 
+  const [autocomplete, setAutocomplete] = useState(null);
+
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries
   });
 
   useEffect(() => {
@@ -67,6 +72,22 @@ const FindFlat = () => {
     }
   };
 
+  const onLoadAutocomplete = (ac) => {
+    setAutocomplete(ac);
+  };
+
+  const onPlaceChanged = () => {
+    if (autocomplete !== null) {
+      const place = autocomplete.getPlace();
+      if (place.geometry && place.geometry.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        setLocation({ lat, lng });
+        fetchListings(lat, lng);
+      }
+    }
+  };
+
   if (loadError) return <div className="p-10 text-center font-semibold text-rose-500">Map Loading Error: Please ensure you have a valid Google Maps API Key configured in your .env file.</div>;
   if (!isLoaded) return <div className="p-10 text-center font-semibold animate-pulse text-gray-500">Loading Map Engine...</div>;
 
@@ -81,7 +102,7 @@ const FindFlat = () => {
               onClick={() => setActiveListing(item._id)}
             >
               <div className="flex gap-4">
-                <img src={item.photoUrl || 'https://via.placeholder.com/100'} alt="flat" className="w-24 h-24 rounded-lg object-cover bg-gray-100" />
+                <img src={(item.photoUrls && item.photoUrls.length > 0) ? item.photoUrls[0] : 'https://via.placeholder.com/100'} alt="flat" className="w-24 h-24 rounded-lg object-cover bg-gray-100" />
                 <div className="flex-1 min-w-0 flex flex-col">
                   <h3 className="font-bold text-gray-900 truncate">{item.owner?.name || item.fullName}'s Flat</h3>
                   <p className="text-sm text-gray-500 truncate mb-auto pb-2">{item.address}</p>
@@ -104,6 +125,23 @@ const FindFlat = () => {
       </div>
 
       <div className="w-[60%] relative">
+        <div className="absolute top-4 left-4 right-4 z-10 flex gap-2">
+          <div className="flex-1 max-w-md bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex items-center px-4 py-2">
+            <Search className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" />
+            <Autocomplete
+              onLoad={onLoadAutocomplete}
+              onPlaceChanged={onPlaceChanged}
+              className="w-full"
+            >
+              <input
+                type="text"
+                placeholder="Search for a location (e.g., Connaught Place)..."
+                className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400 font-medium"
+              />
+            </Autocomplete>
+          </div>
+        </div>
+
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={location}
@@ -130,7 +168,15 @@ const FindFlat = () => {
               <X className="w-5 h-5" />
             </button>
             <div className="overflow-y-auto w-full custom-scrollbar">
-              <img src={selectedListing.photoUrl || 'https://via.placeholder.com/800x400'} className="w-full h-64 object-cover" />
+              <div className="w-full flex overflow-x-auto snap-x custom-scrollbar">
+                {selectedListing.photoUrls && selectedListing.photoUrls.length > 0 ? (
+                  selectedListing.photoUrls.map((url, i) => (
+                    <img key={i} src={url} className="w-full h-64 md:h-80 object-cover flex-none snap-center" />
+                  ))
+                ) : (
+                  <img src="https://via.placeholder.com/800x400" className="w-full h-64 md:h-80 object-cover flex-none snap-center" />
+                )}
+              </div>
               <div className="p-8">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -142,21 +188,49 @@ const FindFlat = () => {
                   </span>
                 </div>
 
-                <p className="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6 leading-relaxed">{selectedListing.aboutYourself}</p>
+                <p className="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6 leading-relaxed whitespace-pre-wrap">{selectedListing.aboutYourself}</p>
+                
+                {selectedListing.facilities && (
+                  <div className="mb-6">
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg">Facilities in Flat</h3>
+                    <p className="text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100 whitespace-pre-wrap">{selectedListing.facilities}</p>
+                  </div>
+                )}
+                
+                {selectedListing.nearbyPlaces && (
+                  <div className="mb-6">
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg">Nearby Places</h3>
+                    <p className="text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100 whitespace-pre-wrap">{selectedListing.nearbyPlaces}</p>
+                  </div>
+                )}
+                
+                {selectedListing.restrictions && (
+                  <div className="mb-6">
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg">Restrictions</h3>
+                    <p className="text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100 whitespace-pre-wrap">{selectedListing.restrictions}</p>
+                  </div>
+                )}
+                
+                {selectedListing.flatmatePreferences && (
+                  <div className="mb-8">
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg">Specific Flatmate Preferences</h3>
+                    <p className="text-gray-600 bg-primary-50 p-4 rounded-xl border border-primary-100 whitespace-pre-wrap text-primary-800">{selectedListing.flatmatePreferences}</p>
+                  </div>
+                )}
 
                 <h3 className="font-bold text-gray-900 mb-3 text-lg">Owner Preferences</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-3 text-center">
-                    <p className="text-xs text-gray-500 mb-1">Gender</p>
-                    <p className="font-semibold text-gray-800">{selectedListing.owner?.preferences?.gender || 'N/A'}</p>
-                  </div>
-                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-3 text-center">
+                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-3 text-center flex flex-col justify-center">
                     <p className="text-xs text-gray-500 mb-1">Food</p>
-                    <p className="font-semibold text-gray-800">{selectedListing.owner?.preferences?.foodPreference || 'N/A'}</p>
+                    <p className="font-semibold text-gray-800 text-sm">{selectedListing.owner?.preferences?.foodPreference || 'N/A'}</p>
                   </div>
-                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-3 text-center">
-                    <p className="text-xs text-gray-500 mb-1">Smoke/Drink</p>
-                    <p className="font-semibold text-gray-800">{selectedListing.owner?.preferences?.smokeOrDrink || 'N/A'}</p>
+                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-3 text-center flex flex-col justify-center">
+                    <p className="text-xs text-gray-500 mb-1">Smoking</p>
+                    <p className="font-semibold text-gray-800 text-sm">{selectedListing.owner?.preferences?.smokingHabit || 'N/A'}</p>
+                  </div>
+                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-3 text-center flex flex-col justify-center">
+                    <p className="text-xs text-gray-500 mb-1">Alcohol</p>
+                    <p className="font-semibold text-gray-800 text-sm">{selectedListing.owner?.preferences?.alcoholConsumption || 'N/A'}</p>
                   </div>
                 </div>
 

@@ -1,7 +1,8 @@
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
+import api from '../utils/axiosInstance';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -10,6 +11,23 @@ gsap.registerPlugin(ScrollTrigger);
 const Home = ({ onRegisterClick }) => {
   const navigate = useNavigate();
   const container = useRef(null);
+  const [featuredListings, setFeaturedListings] = useState([]);
+  const [loadingListings, setLoadingListings] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const { data } = await api.get('/listings');
+        // Get 5-6 listings for featured
+        setFeaturedListings(data.slice(0, 6));
+      } catch (error) {
+        console.error('Failed to fetch featured listings:', error);
+      } finally {
+        setLoadingListings(false);
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   const developers = [
     { initials: 'SM', name: 'Somesh', role: 'Backend & DB', color: 'bg-blue-500' },
@@ -101,6 +119,115 @@ const Home = ({ onRegisterClick }) => {
               List a New Flat
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* How FlatSync Works Section */}
+      <section className="py-24 bg-white relative">
+        <div className="container mx-auto px-6 max-w-6xl relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">How FlatSync Works</h2>
+            <div className="w-24 h-1.5 bg-gradient-to-r from-primary-600 to-primary-400 mx-auto rounded-full"></div>
+            <p className="mt-4 text-gray-600 text-lg">Your perfect flatmate is just three simple steps away.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary-100 transition-colors shadow-sm">
+                <span className="text-3xl">👤</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">1. Create Profile</h3>
+              <p className="text-gray-600 leading-relaxed">Tell us about yourself, your habits, and what you're looking for in a flatmate or a flat.</p>
+            </div>
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary-100 transition-colors shadow-sm">
+                <span className="text-3xl">🔍</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">2. Find Matches</h3>
+              <p className="text-gray-600 leading-relaxed">Browse through curated listings and compatible flatmates based on your preferences.</p>
+            </div>
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary-100 transition-colors shadow-sm">
+                <span className="text-3xl">🤝</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">3. Connect</h3>
+              <p className="text-gray-600 leading-relaxed">Send requests, chat securely, and meet your new flatmate. It's that simple!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Listings Section */}
+      <section className="py-24 bg-gray-50 relative overflow-hidden">
+        <div className="container mx-auto px-6 max-w-6xl relative z-10">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Featured Listings</h2>
+              <div className="w-24 h-1.5 bg-gradient-to-r from-primary-600 to-primary-400 rounded-full"></div>
+            </div>
+          </div>
+          
+          {loadingListings ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            </div>
+          ) : featuredListings.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
+              <div className="text-5xl mb-4">🏠</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No listings available</h3>
+              <p className="text-gray-500 mb-6">Be the first to list a flat in your area!</p>
+              <button 
+                onClick={() => navigate('/list-flat')} 
+                className="px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-full font-semibold transition-all shadow-md"
+              >
+                List a Flat
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="flex overflow-x-auto gap-6 pb-8 custom-scrollbar snap-x">
+                {featuredListings.map((listing) => (
+                  <div 
+                    key={listing._id} 
+                    className="min-w-[300px] md:min-w-[350px] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col snap-start group cursor-pointer"
+                    onClick={() => navigate('/find-flat')}
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={(listing.photoUrls && listing.photoUrls.length > 0) ? listing.photoUrls[0] : 'https://via.placeholder.com/400x300'} 
+                        alt="flat" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-primary-700 shadow-sm">
+                        {listing.vacancyCount} Spot{listing.vacancyCount > 1 ? 's' : ''}
+                      </div>
+                    </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <h3 className="font-bold text-gray-900 text-xl mb-2 line-clamp-1">{listing.owner?.name || listing.fullName}'s Place</h3>
+                      <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-1">{listing.address}</p>
+                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+                        <span className="text-sm font-semibold text-gray-700">Explore Details</span>
+                        <span className="text-primary-600 text-sm font-bold flex items-center group-hover:translate-x-1 transition-transform">
+                          View <ArrowRight className="w-4 h-4 ml-1" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Show More Card */}
+                <div 
+                  onClick={() => navigate('/find-flat')}
+                  className="min-w-[200px] bg-primary-50 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-primary-100 transition-colors border border-primary-100 snap-start group"
+                >
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                    <ArrowRight className="w-8 h-8 text-primary-600" />
+                  </div>
+                  <span className="font-bold text-primary-800 text-lg">Show More</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
