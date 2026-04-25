@@ -3,6 +3,8 @@ import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-m
 import api from '../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import { X, Search } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import MatchScoreBadge from '../components/MatchScoreBadge';
 
 const libraries = ['places'];
 
@@ -15,6 +17,7 @@ const FindFlat = () => {
   const [activeListing, setActiveListing] = useState(null);
   const [selectedListing, setSelectedListing] = useState(null);
   const [reqStatus, setReqStatus] = useState({});
+  const { user, isAuthenticated } = useAuth();
 
   const [autocomplete, setAutocomplete] = useState(null);
 
@@ -189,6 +192,17 @@ const FindFlat = () => {
                 </div>
 
                 <p className="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6 leading-relaxed whitespace-pre-wrap">{selectedListing.aboutYourself}</p>
+
+                {/* Gemini AI Match Score — only for signed-in non-owners */}
+                {isAuthenticated && user && selectedListing.owner && user._id !== (selectedListing.owner._id || selectedListing.owner) && (
+                  <div className="mb-6">
+                    <MatchScoreBadge
+                      listingId={selectedListing._id}
+                      ownerId={selectedListing.owner._id || selectedListing.owner}
+                      viewerId={user._id}
+                    />
+                  </div>
+                )}
                 
                 {selectedListing.facilities && (
                   <div className="mb-6">

@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const MatchScore = require('../models/MatchScore');
 const { streamUpload } = require('../utils/cloudinaryUpload');
 
 const getUserProfile = async (req, res) => {
@@ -52,6 +53,10 @@ const updateUserProfile = async (req, res) => {
     }
 
     const updatedUser = await user.save();
+
+    // Invalidate cached match scores so stale data is not served
+    await MatchScore.deleteMany({ $or: [{ user1: updatedUser._id }, { user2: updatedUser._id }] });
+
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,

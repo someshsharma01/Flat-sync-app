@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../utils/axiosInstance';
 import toast from 'react-hot-toast';
+import { matchScoreCache } from '../utils/matchScoreCache';
 
 const AuthContext = createContext();
 
@@ -38,6 +39,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
+    matchScoreCache.clear(); // Wipe in-memory match score session cache
     toast.success('Logged out successfully');
   };
 

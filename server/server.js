@@ -30,6 +30,7 @@ app.use('/api/listings', require('./routes/listingRoutes'));
 app.use('/api/requests', require('./routes/requestRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/match', require('./routes/matchRoutes'));
 
 // Error handler
 app.use((err, req, res, next) => {
