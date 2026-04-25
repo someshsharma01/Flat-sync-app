@@ -3,23 +3,31 @@ const { streamUpload } = require('../utils/cloudinaryUpload');
 
 const createListing = async (req, res) => {
   try {
-    const { fullName, email, mobileNumber, address, age, aboutYourself, vacancyCount, lat, lng } = req.body;
-    let photoUrl = '';
+    const { 
+      fullName, email, mobileNumber, address, age, aboutYourself, vacancyCount, 
+      nearbyPlaces, facilities, restrictions, flatmatePreferences, lat, lng 
+    } = req.body;
+    let photoUrls = [];
 
-    if (req.file) {
-      const result = await streamUpload(req.file.buffer);
-      photoUrl = result.secure_url;
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map(file => streamUpload(file.buffer));
+      const results = await Promise.all(uploadPromises);
+      photoUrls = results.map(result => result.secure_url);
     }
 
     const listing = await Listing.create({
       owner: req.user._id,
-      photoUrl,
+      photoUrls,
       fullName,
       email,
       mobileNumber,
       address,
       age,
       aboutYourself,
+      nearbyPlaces,
+      facilities,
+      restrictions,
+      flatmatePreferences,
       vacancyCount,
       location: {
         type: 'Point',
@@ -89,11 +97,15 @@ const updateListing = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    const { fullName, email, mobileNumber, address, age, aboutYourself, vacancyCount, lat, lng } = req.body;
+    const { 
+      fullName, email, mobileNumber, address, age, aboutYourself, vacancyCount,
+      nearbyPlaces, facilities, restrictions, flatmatePreferences, lat, lng 
+    } = req.body;
     
-    if (req.file) {
-      const result = await streamUpload(req.file.buffer);
-      listing.photoUrl = result.secure_url;
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map(file => streamUpload(file.buffer));
+      const results = await Promise.all(uploadPromises);
+      listing.photoUrls = results.map(result => result.secure_url);
     }
 
     listing.fullName = fullName || listing.fullName;
@@ -102,6 +114,10 @@ const updateListing = async (req, res) => {
     listing.address = address || listing.address;
     listing.age = age || listing.age;
     listing.aboutYourself = aboutYourself || listing.aboutYourself;
+    listing.nearbyPlaces = nearbyPlaces || listing.nearbyPlaces;
+    listing.facilities = facilities || listing.facilities;
+    listing.restrictions = restrictions || listing.restrictions;
+    listing.flatmatePreferences = flatmatePreferences || listing.flatmatePreferences;
     listing.vacancyCount = vacancyCount || listing.vacancyCount;
     
     if (lat && lng) {

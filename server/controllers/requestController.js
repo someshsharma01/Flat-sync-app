@@ -6,7 +6,7 @@ const sendRequest = async (req, res) => {
     const { listingId } = req.body;
     const listing = await Listing.findById(listingId);
     if (!listing) return res.status(404).json({ message: 'Listing not found' });
-    
+
     const existingReq = await Request.findOne({ fromUser: req.user._id, listingId });
     if (existingReq) return res.status(400).json({ message: 'Request already sent' });
 

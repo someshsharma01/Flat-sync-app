@@ -4,11 +4,11 @@ const { createListing, getListings, getListingById, updateListing, deleteListing
 const { protect } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 
-router.post('/', protect, upload.single('photo'), createListing);
-router.get('/', protect, getListings);
+router.post('/', protect, upload.array('photos', 5), createListing);
+router.get('/', getListings);
 router.get('/my-listings', protect, getMyListings);
 router.get('/:id', protect, getListingById);
-router.put('/:id', protect, upload.single('photo'), updateListing);
+router.put('/:id', protect, upload.array('photos', 5), updateListing);
 router.delete('/:id', protect, deleteListing);
 
 module.exports = router;

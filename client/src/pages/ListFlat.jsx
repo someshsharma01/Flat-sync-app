@@ -18,10 +18,14 @@ const ListFlat = () => {
     address: user?.address || '',
     age: user?.age || '',
     aboutYourself: user?.aboutMe || '',
+    nearbyPlaces: '',
+    facilities: '',
+    restrictions: '',
+    flatmatePreferences: '',
     vacancyCount: 1,
-    photo: null
+    photos: []
   });
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoPreviews, setPhotoPreviews] = useState([]);
 
   useEffect(() => {
     fetchMyListings();
@@ -44,10 +48,14 @@ const ListFlat = () => {
       address: user?.address || '',
       age: user?.age || '',
       aboutYourself: user?.aboutMe || '',
+      nearbyPlaces: '',
+      facilities: '',
+      restrictions: '',
+      flatmatePreferences: '',
       vacancyCount: 1,
-      photo: null
+      photos: []
     });
-    setPhotoPreview(null);
+    setPhotoPreviews([]);
     setEditId(null);
     setShowModal(false);
   };
@@ -60,10 +68,14 @@ const ListFlat = () => {
       address: listing.address,
       age: listing.age,
       aboutYourself: listing.aboutYourself,
+      nearbyPlaces: listing.nearbyPlaces || '',
+      facilities: listing.facilities || '',
+      restrictions: listing.restrictions || '',
+      flatmatePreferences: listing.flatmatePreferences || '',
       vacancyCount: listing.vacancyCount,
-      photo: null
+      photos: []
     });
-    setPhotoPreview(listing.photoUrl);
+    setPhotoPreviews(listing.photoUrls || []);
     setEditId(listing._id);
     setShowModal(true);
   };
@@ -88,7 +100,13 @@ const ListFlat = () => {
       try {
         const formDataPayload = new FormData();
         Object.keys(formData).forEach(key => {
-          if (formData[key] !== null) formDataPayload.append(key, formData[key]);
+          if (key === 'photos') {
+            Array.from(formData.photos).forEach(file => {
+              formDataPayload.append('photos', file);
+            });
+          } else if (formData[key] !== null) {
+            formDataPayload.append(key, formData[key]);
+          }
         });
         formDataPayload.append('lat', pos.coords.latitude);
         formDataPayload.append('lng', pos.coords.longitude);
@@ -135,7 +153,7 @@ const ListFlat = () => {
         ) :
           listings.map(item => (
             <div key={item._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition">
-              <img src={item.photoUrl || 'https://via.placeholder.com/400x200'} className="w-full h-48 object-cover bg-gray-50"/>
+              <img src={(item.photoUrls && item.photoUrls.length > 0) ? item.photoUrls[0] : 'https://via.placeholder.com/400x200'} className="w-full h-48 object-cover bg-gray-50"/>
               <div className="p-5 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-bold text-gray-900 text-lg truncate pr-2">{item.fullName}</h3>
@@ -206,17 +224,40 @@ const ListFlat = () => {
                       <option value={3}>3 Rooms / Spots</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Upload Photo</label>
-                    <input type="file" accept="image/*" onChange={e => {
-                      if(e.target.files[0]) {
-                        setFormData({...formData, photo: e.target.files[0]});
-                        setPhotoPreview(URL.createObjectURL(e.target.files[0]));
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Nearby Places</label>
+                    <textarea placeholder="e.g. 5 mins walk to metro, near City Mall" rows="2" value={formData.nearbyPlaces} onChange={e => setFormData({...formData, nearbyPlaces: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none transition"></textarea>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Facilities in Flat</label>
+                    <textarea placeholder="e.g. WiFi, Washing Machine, AC, Gym" rows="2" value={formData.facilities} onChange={e => setFormData({...formData, facilities: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none transition"></textarea>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Restrictions in Flat</label>
+                    <textarea placeholder="e.g. No smoking, No pets, Veg only" rows="2" value={formData.restrictions} onChange={e => setFormData({...formData, restrictions: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none transition"></textarea>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Specific Flatmate Preferences</label>
+                    <textarea placeholder="e.g. Must be a working professional, should be clean and organized" rows="2" value={formData.flatmatePreferences} onChange={e => setFormData({...formData, flatmatePreferences: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none transition"></textarea>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Upload Photos (Up to 5)</label>
+                    <input type="file" multiple accept="image/*" onChange={e => {
+                      if(e.target.files && e.target.files.length > 0) {
+                        const filesArray = Array.from(e.target.files).slice(0, 5);
+                        setFormData({...formData, photos: filesArray});
+                        setPhotoPreviews(filesArray.map(file => URL.createObjectURL(file)));
                       }
                     }} className="w-full border border-gray-300 border-dashed rounded-lg p-2 file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition cursor-pointer bg-gray-50/50" />
                   </div>
                 </div>
-                {photoPreview && <img src={photoPreview} alt="preview" className="w-full h-56 object-cover rounded-xl mt-2 border shadow-sm" />}
+                {photoPreviews.length > 0 && (
+                  <div className="flex overflow-x-auto gap-3 mt-2 custom-scrollbar pb-2">
+                    {photoPreviews.map((preview, i) => (
+                      <img key={i} src={preview} alt="preview" className="w-32 h-32 min-w-[8rem] object-cover rounded-xl border shadow-sm" />
+                    ))}
+                  </div>
+                )}
                 
                 <button disabled={loading} type="submit" className="mt-4 w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-primary-500/30 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]">
                   {loading ? 'Processing...' : 'Save & Post Listing'}

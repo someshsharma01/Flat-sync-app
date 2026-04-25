@@ -103,11 +103,19 @@ const Profile = () => {
           {!isEditing && (
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
               <h3 className="font-bold text-lg mb-5 flex items-center gap-2"><Settings className="w-5 h-5 text-primary-500" /> My Preferences</h3>
-              {user?.preferences ? (
-                <div className="flex flex-wrap gap-2.5">
-                  {Object.values(user.preferences).map((pref, i) => (
-                     <span key={i} className="bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg text-sm font-semibold">{pref}</span>
-                  ))}
+              {user?.preferences && Object.keys(user.preferences).filter(k => k !== '_id').length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {Object.entries(user.preferences)
+                    .filter(([key]) => key !== '_id')
+                    .map(([key, value], i) => {
+                      const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                      return (
+                        <div key={i} className="flex flex-col border-b border-gray-50 pb-2 last:border-0 last:pb-0">
+                          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{formattedKey}</span>
+                          <span className="font-semibold text-gray-800">{value}</span>
+                        </div>
+                      );
+                  })}
                 </div>
               ) : <p className="text-gray-500 text-sm italic">No preferences set.</p>}
             </div>
