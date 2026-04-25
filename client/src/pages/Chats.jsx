@@ -85,14 +85,13 @@ const Chats = () => {
     const handleUserOffline = (offlineUserId) => {
       setOnlineUsers(prev => prev.filter(id => id !== offlineUserId));
     };
-
-    const handleMessage = (newMsg) => {
-      setMessages(prev => {
-        const exists = prev.find(m => m._id === newMsg._id);
-        if (exists) return prev;
-        return [...prev, newMsg];
-      });
-      socket.emit('mark_seen', { roomId, readerId: user._id });
+    //duplicate messages 
+     const handleMessage = (newMsg) => {
+     setMessages(prev => {
+    if (prev.some(m => m._id === newMsg._id)) return prev;
+    return [...prev, newMsg];
+     });
+       socket.emit('mark_seen', { roomId, readerId: user._id });
     };
 
     const handleSeen = ({ readerId }) => {
@@ -161,7 +160,9 @@ const Chats = () => {
     setMessages(prev => prev.filter(m => m._id !== messageId));
   };
 
-  const isReceiverOnline = onlineUsers.some(id => id.toString() === receiverId?.toString());
+  const isReceiverOnline = onlineUsers?.some(
+  id => id.toString() === receiverId?.toString()
+);
 
   if (!user) {
     return (
@@ -195,7 +196,9 @@ const Chats = () => {
           ) : (
             connections.map(contact => {
               const isActive = contact._id === receiverId;
-              const isOnline = onlineUsers.some(id => id.toString() === contact._id.toString());
+              const isOnline = onlineUsers?.some(        // prevent online crash 
+                 id => id.toString() === contact._id.toString()
+               );
               // Check if there's an unread notification for this user
               const hasUnread = msgNotifications.some(n => n.senderId === contact._id);
 
