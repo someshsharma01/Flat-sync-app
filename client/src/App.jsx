@@ -11,7 +11,7 @@ import ListFlat from './pages/ListFlat';
 import Profile from './pages/Profile';
 import { useState } from 'react';
 import AuthModals from './components/AuthModals';
-import ChatPage from './pages/ChatPage';
+import Chats from './pages/Chats';
 
 function AppContent() {
   const [authModal, setAuthModal] = useState(null);
@@ -35,8 +35,8 @@ function AppContent() {
             <Route path="/find-flat" element={<FindFlat />} />
             <Route path="/list-flat" element={<ListFlat />} />
             <Route path="/profile" element={<Profile />} />
-            {/* ✅ No props needed — ChatPage gets user from AuthContext and socket from SocketContext */}
-            <Route path="/chat/:receiverId" element={<ChatPage />} />
+            <Route path="/chats" element={<Chats />} />
+            <Route path="/chats/:receiverId" element={<Chats />} />
           </Route>
         </Routes>
       </main>

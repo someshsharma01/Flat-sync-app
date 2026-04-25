@@ -109,7 +109,7 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
 
   const openChat = (otherUserId) => {
     setShowDropdown(false);
-    navigate(`/chat/${otherUserId}`);
+    navigate(`/chats/${otherUserId}`);
   };
 
   return (
@@ -133,6 +133,9 @@ const Navbar = ({ onLoginClick, onRegisterClick }) => {
           <>
             <Link to="/find-flat" className="nav-item text-gray-600 hover:text-primary-600 transition-colors font-medium relative group">
               Find Flat<span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all group-hover:w-full"></span>
+            </Link>
+            <Link to="/chats" className="nav-item text-gray-600 hover:text-primary-600 transition-colors font-medium relative group">
+              Chats<span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all group-hover:w-full"></span>
             </Link>
             <Link to="/list-flat" className="nav-item text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 hover:scale-105 transition-transform">
               <PlusCircle className="w-4 h-4"/> List a Flat Vacancy
